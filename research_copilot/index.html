@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f2">
+  <title>Fieldnotes | Research Copilot</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f6f2;
+      --white: #fff;
+      --ink: #182522;
+      --muted: #697570;
+      --line: #dce3dd;
+      --green: #176b52;
+      --green-dark: #124d3d;
+      --lime: #cce76a;
+      --coral: #d75a42;
+      --soft-green: #e8f1eb;
+      --shadow: 0 14px 38px rgba(24, 37, 34, .07);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background-color: var(--paper); background-image: linear-gradient(rgba(24,37,34,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(24,37,34,.025) 1px, transparent 1px); background-size: 28px 28px; color: var(--ink); font: 14px/1.5 "Aptos", "Segoe UI", sans-serif; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .topbar { height: 68px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.9); display: flex; align-items: center; justify-content: space-between; padding: 0 5vw; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 700; letter-spacing: .02em; }
+    .brand-mark { display: grid; place-items: center; width: 31px; height: 31px; color: white; background: var(--green); border-radius: 9px 9px 9px 2px; font: bold 17px Georgia, serif; }
+    .brand small { display: block; margin-top: 1px; color: var(--muted); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; }
+    .local-badge { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+    .local-badge i { width: 8px; height: 8px; border-radius: 50%; background: #43a77e; box-shadow: 0 0 0 3px #e1f1e8; }
+    .layout { width: min(1440px, 100%); margin: auto; padding: 34px 5vw 60px; display: grid; grid-template-columns: 310px minmax(0,1fr); gap: 34px; align-items: start; }
+    .composer { position: sticky; top: 24px; padding: 23px; background: var(--white); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .eyebrow { margin: 0 0 7px; color: var(--green); font-size: 10px; line-height: 1.3; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 7px; font: 36px/1.06 Georgia, "Times New Roman", serif; letter-spacing: 0; }
+    .intro { margin-bottom: 23px; color: var(--muted); font-size: 13px; }
+    label { display: block; margin-bottom: 7px; color: #40504a; font-size: 11px; font-weight: 750; }
+    .field { margin-bottom: 17px; }
+    input[type="text"], textarea, select { width: 100%; border: 1px solid #d4ddd6; border-radius: 5px; outline: none; background: #fbfcfa; color: var(--ink); transition: border-color .15s, box-shadow .15s; }
+    input[type="text"], select { height: 40px; padding: 0 11px; }
+    textarea { min-height: 144px; padding: 11px; resize: vertical; line-height: 1.6; }
+    input:focus, textarea:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(23,107,82,.1); }
+    .field-hint { margin: 5px 0 0; color: #89938d; font-size: 11px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0 16px; border-top: 1px solid var(--line); }
+    .toggle-copy { color: var(--ink); font-size: 12px; font-weight: 700; }
+    .toggle-copy small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 400; }
+    .switch { position: relative; width: 37px; height: 21px; flex: 0 0 auto; }
+    .switch input { position: absolute; opacity: 0; }
+    .switch span { position: absolute; inset: 0; border-radius: 20px; background: #c7d0ca; transition: .18s; }
+    .switch span::after { position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: white; content: ""; transition: .18s; box-shadow: 0 1px 3px #77827b; }
+    .switch input:checked + span { background: var(--green); }
+    .switch input:checked + span::after { transform: translateX(16px); }
+    .primary { width: 100%; min-height: 43px; border: 0; border-radius: 5px; background: var(--green); color: white; font-size: 13px; font-weight: 750; transition: background .16s, transform .16s; }
+    .primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .primary:disabled { cursor: wait; opacity: .66; transform: none; }
+    .error { display: none; margin: 12px 0 0; padding: 10px; border: 1px solid #f0c7bc; border-radius: 5px; background: #fff5f1; color: #9e3d2c; font-size: 12px; }
+    .main { min-width: 0; animation: rise .45s both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .heading-row { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin: 3px 0 23px; }
+    .heading-row h2 { margin: 0; font: 31px/1.1 Georgia, "Times New Roman", serif; }
+    .heading-row p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+    .status { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 20px; background: white; color: #52615a; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #95a19a; }
+    .status.completed::before { background: #43a77e; }
+    .status.paused::before { background: var(--coral); }
+    .status.running::before { background: #d7a735; animation: pulse 1s infinite alternate; }
+    @keyframes pulse { to { opacity: .35; } }
+    .metrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 11px; margin-bottom: 23px; }
+    .metric { min-height: 99px; padding: 15px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,.92); }
+    .metric-label { display: block; color: var(--muted); font-size: 10px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+    .metric-value { display: block; margin-top: 7px; font: 25px/1 Georgia, serif; }
+    .metric-note { display: block; margin-top: 7px; color: #87928c; font-size: 10px; }
+    .tabs { display: flex; overflow-x: auto; border-bottom: 1px solid #cfd9d1; gap: 23px; }
+    .tab { position: relative; flex: 0 0 auto; padding: 0 0 11px; border: 0; background: transparent; color: #758079; font-size: 12px; font-weight: 700; }
+    .tab.active { color: var(--green-dark); }
+    .tab.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--green); content: ""; }
+    .tab-count { margin-left: 5px; color: #97a19b; font-size: 10px; }
+    .panel { min-height: 285px; padding-top: 21px; }
+    .panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .panel-title h3 { margin: 0; font: 19px Georgia, serif; }
+    .panel-title span { color: var(--muted); font-size: 11px; }
+    .empty { min-height: 245px; display: grid; place-items: center; padding: 25px; border: 1px dashed #c8d3cb; border-radius: 6px; background: rgba(255,255,255,.46); text-align: center; }
+    .empty-mark { width: 45px; height: 45px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 50%; background: #e5eee7; color: var(--green); font: 24px Georgia, serif; }
+    .empty h3 { margin: 0 0 5px; font: 19px Georgia, serif; }
+    .empty p { max-width: 350px; margin: 0; color: var(--muted); font-size: 12px; }
+    .source { margin-bottom: 12px; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: white; }
+    .source-head { display: flex; justify-content: space-between; gap: 15px; padding: 16px 17px 12px; }
+    .source-title { margin: 0 0 5px; font-size: 14px; font-weight: 750; overflow-wrap: anywhere; }
+    .source-url { display: inline-block; max-width: 100%; color: var(--green); font-size: 11px; overflow-wrap: anywhere; }
+    .source-body { padding: 0 17px 15px; }
+    .source-body p { margin-bottom: 11px; color: #52615a; font-size: 12px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { padding: 4px 7px; border-radius: 3px; background: var(--soft-green); color: #315b49; font-size: 10px; }
+    .source-meta { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 17px; border-top: 1px solid #edf0ed; background: #fbfcfa; }
+    .badge { padding: 3px 7px; border-radius: 3px; background: #edf0ed; color: #56635d; font-size: 10px; font-weight: 700; }
+    .badge.alert { background: #fff0e9; color: #a74835; }
+    details { border-top: 1px solid #edf0ed; }
+    summary { padding: 10px 17px; color: #56635d; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .citation { padding: 0 17px 12px; color: #58665f; font-size: 11px; overflow-wrap: anywhere; }
+    .citation p { margin: 5px 0; }
+    .review-item, .topic, .note { margin-bottom: 10px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 6px; background: white; }
+    .review-item p, .topic p, .note p { margin: 8px 0 0; color: #5b6962; font-size: 12px; }
+    .review-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .decision { min-height: 32px; padding: 0 10px; border: 1px solid #d2dad4; border-radius: 4px; background: white; color: var(--ink); font-size: 11px; font-weight: 700; }
+    .decision.selected { border-color: var(--green); background: var(--soft-green); color: var(--green-dark); }
+    .resume-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; padding: 14px; border: 1px solid #ead5c7; border-radius: 5px; background: #fff9f4; color: #765744; font-size: 12px; }
+    .resume-row .primary { width: auto; padding: 0 15px; }
+    .narrative { margin: 0 0 15px; padding: 16px; border-left: 3px solid var(--lime); background: white; color: #42514a; font: 15px/1.6 Georgia, serif; }
+    .bar-row { display: grid; grid-template-columns: 125px 1fr 35px; gap: 10px; align-items: center; margin: 10px 0; color: #56635d; font-size: 11px; }
+    .bar-track { height: 6px; border-radius: 9px; background: #e3e9e4; }
+    .bar-fill { height: 100%; min-width: 2px; border-radius: inherit; background: var(--green); }
+    .notes-list { border-left: 1px solid #cad7cd; margin-left: 7px; padding-left: 17px; }
+    .note { position: relative; }
+    .note::before { position: absolute; top: 18px; left: -23px; width: 9px; height: 9px; border: 2px solid var(--paper); border-radius: 50%; background: var(--green); content: ""; }
+    .note time { color: #8a948e; font-size: 10px; }
+    .project-list { margin-top: 19px; padding-top: 15px; border-top: 1px solid var(--line); }
+    .project-list-head { margin-bottom: 7px; color: #859089; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
+    .project-link { display: flex; width: 100%; justify-content: space-between; gap: 8px; padding: 8px 2px; border: 0; background: transparent; color: #44524b; text-align: left; font-size: 11px; }
+    .project-link:hover { color: var(--green); }
+    .project-link small { color: #8a948e; white-space: nowrap; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 5; max-width: min(420px, calc(100vw - 48px)); padding: 12px 16px; border-radius: 5px; background: var(--ink); color: white; box-shadow: var(--shadow); font-size: 12px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 920px) { .layout { grid-template-columns: 270px minmax(0,1fr); gap: 22px; padding-right: 3vw; padding-left: 3vw; } .metrics { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (max-width: 680px) { .topbar { height: 58px; padding: 0 18px; } .layout { display: flex; flex-direction: column; padding: 22px 16px 40px; gap: 25px; } .composer { position: static; width: 100%; } .main { width: 100%; } .heading-row h2 { font-size: 27px; } .heading-row { align-items: start; } .status { padding: 6px 8px; font-size: 10px; } .metrics { gap: 8px; } .metric { min-height: 88px; padding: 12px; } .metric-value { font-size: 22px; } .resume-row { align-items: start; flex-direction: column; } .resume-row .primary { width: 100%; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="brand-mark">F</span><span>FIELDNOTES<small>Research Copilot</small></span></div><div class="local-badge"><i></i> Local workspace</div></header>
+  <main class="layout">
+    <aside class="composer">
+      <p class="eyebrow">Research desk</p><h1>Start a run.</h1><p class="intro">Gather sources, find signals, keep the evidence close.</p>
+      <form id="run-form">
+        <div class="field"><label for="project-id">Project ID</label><input id="project-id" name="project-id" type="text" maxlength="64" placeholder="climate-policy-2026" required><p class="field-hint">A private folder for this project's sources and notes.</p></div>
+        <div class="field"><label for="source-type">Source collection</label><select id="source-type"><option value="web">Web research</option><option value="academic">Academic</option><option value="market">Market intelligence</option><option value="news">News & current events</option></select></div>
+        <div class="field"><label for="seed-urls">Seed URLs</label><textarea id="seed-urls" placeholder="https://example.org/report&#10;https://example.net/research" spellcheck="false"></textarea><p class="field-hint">One complete http(s) URL per line. Same-domain pages are followed automatically.</p></div>
+        <div class="toggle-row"><div class="toggle-copy">Human review gate<small>Pause before finalizing flagged sources</small></div><label class="switch" aria-label="Enable human review"><input id="human-review" type="checkbox"><span></span></label></div>
+        <button id="run-button" class="primary" type="submit">Run research <span aria-hidden="true">&nbsp;↗</span></button><div id="error" class="error" role="alert"></div>
+      </form>
+      <div class="project-list"><div class="project-list-head">Recent projects</div><div id="project-list"></div></div>
+    </aside>
+    <section class="main">
+      <div class="heading-row"><div><p class="eyebrow">Your research, in context</p><h2 id="project-heading">A clearer view of the field.</h2><p id="project-subtitle">Create a project to bring sources into focus.</p></div><span id="status" class="status">Ready</span></div>
+      <div class="metrics"><div class="metric"><span class="metric-label">Sources reviewed</span><strong id="metric-docs" class="metric-value">0</strong><span class="metric-note">Documents in this project</span></div><div class="metric"><span class="metric-label">Flagged for review</span><strong id="metric-bias" class="metric-value">0%</strong><span class="metric-note">Source quality signals</span></div><div class="metric"><span class="metric-label">Time returned</span><strong id="metric-time" class="metric-value">0h</strong><span class="metric-note">Estimated vs. manual research</span></div><div class="metric"><span class="metric-label">Historical context</span><strong id="metric-grounded" class="metric-value">0</strong><span class="metric-note">Related stored documents</span></div></div>
+      <nav class="tabs" aria-label="Project views"><button class="tab active" data-tab="overview">Overview</button><button class="tab" data-tab="sources">Sources <span id="source-count" class="tab-count">0</span></button><button class="tab" data-tab="trends">Trends</button><button class="tab" data-tab="review">Review <span id="review-count" class="tab-count">0</span></button><button class="tab" data-tab="context">Context <span id="context-count" class="tab-count">0</span></button></nav>
+      <div id="panel" class="panel"></div>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+  <script>
+    const state = { project: null, tab: "overview", decisions: {} };
+    const $ = (selector) => document.querySelector(selector);
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    const safeUrl = (value) => { try { const url = new URL(value); return ["http:", "https:"].includes(url.protocol) ? url.href : "#"; } catch { return "#"; } };
+    const formatDate = (value) => { const date = new Date(value); return Number.isNaN(date.valueOf()) ? "" : date.toLocaleString(); };
+    function showToast(message) { const toast = $("#toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2800); }
+    function setError(message = "") { const error = $("#error"); error.textContent = message; error.style.display = message ? "block" : "none"; }
+    async function api(path, options = {}) { const response = await fetch(path, { ...options, headers: { "Content-Type": "application/json", ...(options.headers || {}) } }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "Request failed."); return data; }
+    function setStatus(status, crawlError = false) { const el = $("#status"); const label = crawlError ? "Source unavailable" : status === "paused" ? "Review needed" : status === "completed" ? "Completed" : status === "running" ? "Researching" : "Ready"; el.textContent = label; el.className = `status ${crawlError ? "paused" : escapeHtml(status || "")}`; }
+    async function refreshProjects() { const data = await api("/api/projects"); $("#project-list").innerHTML = data.projects.length ? data.projects.map((project) => `<button class="project-link" data-project="${escapeHtml(project.project_id)}"><span>${escapeHtml(project.project_id)}</span><small>${project.document_count} sources</small></button>`).join("") : `<span class="field-hint">Projects will appear here.</span>`; }
+    async function loadProject(projectId) {
+      if (!projectId) return;
+      try { const project = await api(`/api/project?project_id=${encodeURIComponent(projectId)}`); state.project = project; state.decisions = {}; $("#project-id").value = projectId; $("#project-heading").textContent = projectId; const count = project.documents.length; $("#project-subtitle").textContent = count ? `${count} source${count === 1 ? "" : "s"} · Updated ${formatDate(project.documents.at(-1)?.crawled_at || project.context_notes.at(-1)?.created_at)}` : project.crawl_error || "Project is ready for its first research run."; setStatus(project.status, Boolean(project.crawl_error)); renderMetrics(); renderPanel(); } catch (error) { setError(error.message); }
+    }
+    function renderMetrics() { const project = state.project || {}; const metrics = project.metrics || {}; const trends = project.trend_analysis || {}; $("#metric-docs").textContent = metrics.document_count ?? project.documents?.length ?? 0; $("#metric-bias").textContent = `${metrics.bias_detection_rate ?? 0}%`; $("#metric-time").textContent = `${metrics.time_saved_vs_manual_hours ?? 0}h`; $("#metric-grounded").textContent = trends.grounded_documents ?? 0; $("#source-count").textContent = project.documents?.length ?? 0; $("#review-count").textContent = project.review_queue?.length ?? 0; $("#context-count").textContent = project.context_notes?.length ?? 0; }
+    function emptyState(title, copy, mark = "+") { return `<div class="empty"><div><div class="empty-mark">${mark}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(copy)}</p></div></div>`; }
+    function renderSource(doc) {
+      const summary = doc.summary?.summary || "No summary is available for this source."; const insights = (doc.summary?.insights || []).map((insight) => `<span class="chip">${escapeHtml(insight)}</span>`).join(""); const review = doc.review || {}; const citation = doc.citation || {};
+      const flag = review.flagged_for_human_review ? `<span class="badge alert">Needs review · ${Math.round((review.bias_score || 0) * 100)}% bias</span>` : `<span class="badge">${escapeHtml(review.quality_flag || "Reviewed")}</span>`;
+      const citationHtml = citation.apa || citation.mla ? `<details><summary>Citations · APA & MLA</summary><div class="citation"><p><b>APA</b> ${escapeHtml(citation.apa || "Not available")}</p><p><b>MLA</b> ${escapeHtml(citation.mla || "Not available")}</p></div></details>` : "";
+      return `<article class="source"><div class="source-head"><div><h3 class="source-title">${escapeHtml(doc.title || doc.url || "Untitled source")}</h3><a class="source-url" href="${escapeHtml(safeUrl(doc.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(doc.url || "")}</a></div>${flag}</div><div class="source-body"><p>${escapeHtml(summary)}</p><div class="chips">${insights}</div></div><div class="source-meta"><span class="badge">Confidence ${Math.round((doc.summary?.confidence ?? 0) * 100)}%</span><span class="badge">${escapeHtml(doc.source_type || "source")}</span></div>${citationHtml}</article>`;
+    }
+    function renderOverview() {
+      const project = state.project; if (!project) return emptyState("Your next good question starts here.", "Add a project ID and a few seed URLs to build a research trail.", "F");
+      const durations = Object.entries(project.stage_durations || {}); const durationRows = durations.length ? `<div class="topic"><div class="panel-title"><h3>Pipeline timings</h3><span>Seconds per stage</span></div>${durations.map(([name, seconds]) => `<div class="bar-row"><span>${escapeHtml(name.replaceAll("_", " "))}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(2, Math.min(100, Number(seconds) * 8))}%"></div></div><span>${escapeHtml(seconds)}s</span></div>`).join("")}</div>` : "";
+      const crawlAlert = project.crawl_error ? `<p class="narrative" role="alert">Source retrieval failed: ${escapeHtml(project.crawl_error)} The run completed, but no sources were available to analyze.</p>` : "";
+      return `<div class="panel-title"><h3>Run overview</h3><span>${project.documents.length} stored source${project.documents.length === 1 ? "" : "s"}</span></div>${crawlAlert}${project.documents.length ? project.documents.slice(0, 3).map(renderSource).join("") : emptyState(project.crawl_error ? "No source was retrieved" : "No sources yet", project.crawl_error ? "Check whether the source is public and allows automated access, then retry." : "Your sources, summaries, citations, and quality checks will collect here.")}${durationRows}`;
+    }
+    function renderTrends() {
+      const trends = state.project?.trend_analysis || {}; if (!trends.topics?.length && !trends.narrative) return emptyState("Patterns emerge across sources.", "Run a project to see recurring topics and historical grounding.", "↗");
+      const topics = (trends.topics || []).map((item) => `<article class="topic"><div class="panel-title"><h3>${escapeHtml(item.topic)}</h3><span>${escapeHtml(item.supporting_sources || 0)} supporting sources</span></div><p>${escapeHtml(item.rationale || "")}</p></article>`).join("");
+      return `<p class="narrative">${escapeHtml(trends.narrative || "No trend narrative returned.")}</p><div class="panel-title"><h3>Emerging topics</h3><span>${trends.grounded_documents || 0} historical documents retrieved</span></div>${topics || emptyState("No topics identified", "Try adding more source URLs to this project.")}`;
+    }
+    function renderReview() {
+      const queue = state.project?.review_queue || []; if (!queue.length) return emptyState("Nothing waiting on you.", "Sources that cross the quality threshold will be listed here for a decision.", "✓");
+      const cards = queue.map((doc) => { const review = doc.review || {}; const decision = state.decisions[doc.id] || ""; return `<article class="review-item"><div class="panel-title"><h3>${escapeHtml(doc.title || doc.url || doc.id)}</h3><span class="badge alert">Bias ${Math.round((review.bias_score || 0) * 100)}%</span></div><a class="source-url" href="${escapeHtml(safeUrl(doc.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(doc.url || "Open source")}</a><p>${escapeHtml(review.bias_notes || "Quality review requested.")}</p>${(review.accuracy_concerns || []).map((item) => `<p>• ${escapeHtml(item)}</p>`).join("")}<div class="review-actions"><button class="decision ${decision === "approve" ? "selected" : ""}" data-decision="approve" data-doc="${escapeHtml(doc.id)}">Approve source</button><button class="decision ${decision === "reject" ? "selected" : ""}" data-decision="reject" data-doc="${escapeHtml(doc.id)}">Reject source</button></div></article>`; }).join("");
+      const allDecided = queue.every((doc) => state.decisions[doc.id]); return `${cards}<div class="resume-row"><span>${allDecided ? "All flagged sources have a decision." : "Choose approve or reject for each source before resuming."}</span><button id="resume-button" class="primary" ${allDecided ? "" : "disabled"}>Apply decisions & resume</button></div>`;
+    }
+    function renderContext() { const notes = state.project?.context_notes || []; if (!notes.length) return emptyState("A project memory, built over time.", "Run notes are saved in insertion order and scoped to this project.", "⌁"); return `<div class="panel-title"><h3>Project memory</h3><span>Oldest first · ${notes.length} notes</span></div><div class="notes-list">${notes.map((note) => `<article class="note"><time>${escapeHtml(formatDate(note.created_at))}</time><p>${escapeHtml(note.content)}</p></article>`).join("")}</div>`; }
+    function renderPanel() { const panel = $("#panel"); const project = state.project; if (state.tab === "sources") panel.innerHTML = project?.documents?.length ? `<div class="panel-title"><h3>Source library</h3><span>${project.documents.length} documents</span></div>${project.documents.map(renderSource).join("")}` : emptyState("The source library is empty.", "Add one or more complete URLs to begin."); else if (state.tab === "trends") panel.innerHTML = renderTrends(); else if (state.tab === "review") panel.innerHTML = renderReview(); else if (state.tab === "context") panel.innerHTML = renderContext(); else panel.innerHTML = renderOverview(); }
+    async function run(resume = false) {
+      const button = $("#run-button"); const resumeButton = $("#resume-button"); const urls = $("#seed-urls").value.split(/\r?\n/).map((url) => url.trim()).filter(Boolean);
+      const payload = { project_id: $("#project-id").value.trim(), urls, source_type: $("#source-type").value, human_review: $("#human-review").checked, decisions: state.decisions };
+      setError(""); button.disabled = true; if (resumeButton) resumeButton.disabled = true; setStatus("running"); $("#project-heading").textContent = payload.project_id || "Research run"; $("#project-subtitle").textContent = resume ? "Applying your decisions and restoring the paused run…" : "Gathering sources and preparing analysis…";
+      try { const result = await api(resume ? "/api/resume" : "/api/run", { method: "POST", body: JSON.stringify(payload) }); await refreshProjects(); await loadProject(payload.project_id); if (result.status === "paused") { state.tab = "review"; document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === "review")); renderPanel(); showToast("Research paused. Review the flagged sources to continue."); } else if (result.crawl_error) showToast(`No sources retrieved: ${result.crawl_error}`); else showToast(result.status === "completed" ? "Research run completed." : result.message || "Research run finished."); }
+      catch (error) { setError(error.message); setStatus(state.project?.status || "ready"); } finally { button.disabled = false; }
+    }
+    $("#run-form").addEventListener("submit", (event) => { event.preventDefault(); run(false); });
+    document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => { state.tab = tab.dataset.tab; document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === tab)); renderPanel(); }));
+    $("#project-list").addEventListener("click", (event) => { const button = event.target.closest("[data-project]"); if (button) loadProject(button.dataset.project); });
+    $("#panel").addEventListener("click", (event) => { const decision = event.target.closest("[data-decision]"); if (decision) { state.decisions[decision.dataset.doc] = decision.dataset.decision; renderPanel(); } if (event.target.closest("#resume-button")) run(true); });
+    refreshProjects().then(() => { const project = new URLSearchParams(location.search).get("project"); if (project) loadProject(project); else renderPanel(); }).catch((error) => { setError(error.message); renderPanel(); });
+  </script>
+</body>
+</html>
